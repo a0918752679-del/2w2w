@@ -473,7 +473,9 @@ app.get('/api/summary', async (req,res)=>{try{const data=await getDashboardData(
 const LINE_COMMANDS = [
   '最新進度',
   '執行進度',
+  '2月份執行成效',
   '6月進度',
+  '淡水區執行成效',
   '淡水區成效',
   '日期2026-06-12',
   '機號OE_ZB004',
@@ -490,7 +492,7 @@ app.get('/line-webhook',(req,res)=>res.json({
   secretConfigured:Boolean(LINE_CHANNEL_SECRET),
   sheetConfigured:Boolean(GOOGLE_SHEET_ID && GOOGLE_SERVICE_ACCOUNT_JSON),
   verifySignature:LINE_WEBHOOK_VERIFY,
-  mode:'manual_reply_and_filtered_query',
+  mode:'manual_reply_filtered_query_detailed_kpi',
   commands:LINE_COMMANDS
 }));
 
@@ -501,7 +503,7 @@ app.get('/api/line-debug',(req,res)=>res.json({
   verifySignature:LINE_WEBHOOK_VERIFY,
   sheetConfigured:Boolean(GOOGLE_SHEET_ID && GOOGLE_SERVICE_ACCOUNT_JSON),
   commands:LINE_COMMANDS,
-  querySupport:['月份','日期','行政區','機號/機台','車牌號碼','KPI 指標','佐證明細'],
+  querySupport:['月份執行成效','日期執行成效','行政區執行成效','機號/機台','車牌號碼','KPI 指標','佐證明細','排名摘要'],
   hint:'LINE Bot 沒回應時，先確認 LINE Developers Webhook URL 是否為 /line-webhook，並查看 Zeabur Logs 是否出現 [LINE_WEBHOOK_RECEIVED]。'
 }));
 
@@ -520,17 +522,19 @@ function lineHelpMessage(){
     '・最新進度',
     '',
     '二、條件查詢',
+    '・2月份執行成效',
     '・6月進度',
     '・2026-06-12 成效',
+    '・淡水區執行成效',
     '・淡水區 成效',
     '・機號 OE_ZB004',
     '・車牌 ABC-1234',
     '・淡水區 6月 告發率',
     '',
-    '三、可查欄位',
-    '月份、日期、行政區、機號、車牌、告發率、通檢率、超標率、成案率。',
+    '三、回覆內容',
+    '執行場次、完成場次、車流、超標、告發、通檢、成案、告發率、通檢率、KPI、排行與佐證明細。',
     '',
-    '系統會即時讀取平台資料，並列出摘要與佐證明細。'
+    '系統會即時讀取平台資料，並列出摘要、排行與佐證資料。'
   ].join('\n');
 }
 function canonicalDistrict(text){
@@ -621,32 +625,99 @@ function compactLocation(s){
   const t=String(s||'').replace(/^新北市/,'').trim();
   return t.length>24 ? `${t.slice(0,24)}…` : t;
 }
+function nfmt(v){ return Number(v||0).toLocaleString('zh-TW'); }
+function rateText(v){ return `${Number(v||0).toFixed(2)}%`; }
+function rangeText(rows){
+  const dates=(rows||[]).map(r=>String(r.date||'').slice(0,10)).filter(Boolean).sort();
+  if(!dates.length) return '-';
+  return dates[0]===dates[dates.length-1] ? dates[0] : `${dates[0]} 至 ${dates[dates.length-1]}`;
+}
+function groupRows(rows,keyFn){
+  const m=new Map();
+  for(const r of rows||[]){
+    const k=keyFn(r)||'未填';
+    const x=m.get(k)||{name:k,sessions:0,vehicles:0,over:0,fine:0,inspect:0,caseTotal:0,kpi:0,caseRate:0};
+    x.sessions += 1;
+    x.vehicles += Number(r.vehicles)||0;
+    x.over += Number(r.over)||0;
+    x.fine += Number(r.fineCases)||0;
+    x.inspect += Number(r.inspectCases)||0;
+    m.set(k,x);
+  }
+  for(const x of m.values()){
+    x.caseTotal=x.fine+x.inspect;
+    x.kpi=x.sessions?Math.round((x.caseTotal/x.sessions)*100)/100:0;
+    x.caseRate=pct(x.caseTotal,x.vehicles);
+  }
+  return [...m.values()];
+}
+function topRows(rows,keyFn,limit=5){
+  return groupRows(rows,keyFn).sort((a,b)=>b.caseTotal-a.caseTotal || b.sessions-a.sessions || b.vehicles-a.vehicles).slice(0,limit);
+}
+function topVehicleTypes(vehicles,limit=4){
+  const m=new Map();
+  for(const v of vehicles||[]){
+    const k=v.caseType||'未填';
+    m.set(k,(m.get(k)||0)+1);
+  }
+  return [...m.entries()].sort((a,b)=>b[1]-a[1]).slice(0,limit);
+}
 function lineFilteredMessage(allData,q){
   const filtered=filterForLineQuery(allData,q);
   const s=summary(filtered);
-  const p=v=>`${Number(v||0).toFixed(2)}%`;
   const title=lineQueryTitle(q);
-  const rawProof=(filtered.raw||[]).slice(0,3);
-  const vehicleProof=(filtered.vehicles||[]).slice(0,5);
+  const rawRows=filtered.raw||[];
+  const vehicleRows=filtered.vehicles||[];
+  const rawProof=rawRows.slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).slice(0,5);
+  const vehicleProof=vehicleRows.slice().sort((a,b)=>String(b.datetime||b.date||'').localeCompare(String(a.datetime||a.date||''))).slice(0,5);
   const lines=[
     `🔎 查詢條件：${title}`,
+    `資料期間：${rangeText(rawRows)}`,
     '',
-    '📊 統計摘要',
-    `場次：${s.sessions} 場（完成 ${s.completed} 場）`,
-    `辨識車流：${s.vehicleDetected.toLocaleString('zh-TW')}`,
-    `超標：${s.over.toLocaleString('zh-TW')}｜超標率 ${p(s.overRate)}`,
-    `告發：${s.fineCases.toLocaleString('zh-TW')}｜告發率 ${p(s.fineRate)}`,
-    `通檢：${s.inspectCases.toLocaleString('zh-TW')}｜通檢率 ${p(s.inspectRate)}`,
-    `成案：${s.caseTotal.toLocaleString('zh-TW')}｜成案率 ${p(s.caseRate)}`,
+    '📊 執行成效摘要',
+    `執行場次：${nfmt(s.sessions)} 場`,
+    `完成場次：${nfmt(s.completed)} 場`,
+    `辨識車流：${nfmt(s.vehicleDetected)}`,
+    `超標數：${nfmt(s.over)}（超標率 ${rateText(s.overRate)}）`,
+    `告發件數：${nfmt(s.fineCases)}（告發率 ${rateText(s.fineRate)}）`,
+    `通檢件數：${nfmt(s.inspectCases)}（通檢率 ${rateText(s.inspectRate)}）`,
+    `成案件數：${nfmt(s.caseTotal)}（成案率 ${rateText(s.caseRate)}）`,
     `場次 KPI：${s.kpi} 件/場`,
-    `車輛明細：${s.vehicleRows.toLocaleString('zh-TW')} 筆`,
+    `告發金額：${nfmt(s.fineAmount)} 元`,
+    `車輛明細：${nfmt(s.vehicleRows)} 筆（告發 ${nfmt(s.fineVehicles)}／通檢 ${nfmt(s.inspectVehicles)}）`,
     ''
   ];
+
+  if(!q.district){
+    const topDistricts=topRows(rawRows,r=>r.district,5);
+    if(topDistricts.length){
+      lines.push('🏙 行政區排行（依成案件數）');
+      topDistricts.forEach((x,i)=>lines.push(`${i+1}. ${x.name}｜場次 ${x.sessions}｜告發 ${x.fine}｜通檢 ${x.inspect}｜成案 ${x.caseTotal}｜KPI ${x.kpi}`));
+      lines.push('');
+    }
+  }
+
+  if(!q.machine){
+    const topMachines=topRows(rawRows,r=>r.machine,5).filter(x=>x.name && x.name!=='未填');
+    if(topMachines.length){
+      lines.push('📷 機台排行（依成案件數）');
+      topMachines.forEach((x,i)=>lines.push(`${i+1}. ${x.name}｜場次 ${x.sessions}｜告發 ${x.fine}｜通檢 ${x.inspect}｜成案 ${x.caseTotal}`));
+      lines.push('');
+    }
+  }
+
+  const vehicleTypes=topVehicleTypes(vehicleRows,4);
+  if(vehicleTypes.length){
+    lines.push('🚗 車輛案件類型');
+    vehicleTypes.forEach(([k,v])=>lines.push(`・${k}：${nfmt(v)} 筆`));
+    lines.push('');
+  }
+
   if(q.plate){
     lines.push('🚗 車牌佐證');
     if(vehicleProof.length){
       vehicleProof.forEach((v,i)=>{
-        lines.push(`${i+1}. ${v.plate || '-'}｜${v.caseType || '-'}｜${v.date || '-'} ${String(v.datetime||'').replace(v.date||'','').trim()}`);
+        lines.push(`${i+1}. ${v.plate || '-'}｜${v.caseType || '-'}｜${v.date || '-'} ${String(v.datetime||'').replace(v.date||'').trim()}`);
         lines.push(`   ${v.district || '-'}｜${compactLocation(v.location || v.road)}`);
         lines.push(`   量測 ${v.db || '-'} / 標準 ${v.standard || '-'} / 超標 ${v.exceed || '-'}`);
         if(v.caseNo) lines.push(`   案件編號：${v.caseNo}`);
@@ -655,22 +726,22 @@ function lineFilteredMessage(allData,q){
       lines.push('查無符合車牌資料。');
     }
   }else{
-    lines.push('📌 場次佐證');
+    lines.push('📌 場次佐證（最近 5 筆）');
     if(rawProof.length){
       rawProof.forEach((r,i)=>{
         lines.push(`${i+1}. S${r.seq || '-'}｜${r.date || '-'}｜${r.machine || '-'}`);
         lines.push(`   ${r.district || '-'}｜${compactLocation(r.location)}`);
-        lines.push(`   車流 ${r.vehicles || 0}｜超標 ${r.over || 0}｜告發 ${r.fineCases || 0}｜通檢 ${r.inspectCases || 0}`);
+        lines.push(`   車流 ${nfmt(r.vehicles)}｜超標 ${nfmt(r.over)}｜告發 ${nfmt(r.fineCases)}｜通檢 ${nfmt(r.inspectCases)}`);
       });
     }else{
       lines.push('查無符合場次資料。');
     }
     if(vehicleProof.length){
       lines.push('');
-      lines.push('🚗 車輛明細佐證');
-      vehicleProof.slice(0,3).forEach((v,i)=>{
+      lines.push('🚗 車輛明細佐證（最近 5 筆）');
+      vehicleProof.forEach((v,i)=>{
         lines.push(`${i+1}. ${v.plate || '-'}｜${v.caseType || '-'}｜${v.date || '-'}｜${v.district || '-'}`);
-        lines.push(`   ${compactLocation(v.location || v.road)}｜量測 ${v.db || '-'} dB`);
+        lines.push(`   ${compactLocation(v.location || v.road)}｜量測 ${v.db || '-'} dB｜超標 ${v.exceed || '-'}`);
       });
     }
   }
@@ -679,6 +750,7 @@ function lineFilteredMessage(allData,q){
   lines.push('註：若需完整明細，請至後台一鍵產出 Excel 總表。');
   return lines.join('\n');
 }
+
 
 app.post('/line-webhook',async(req,res)=>{
   const events = Array.isArray(req.body?.events) ? req.body.events : [];
