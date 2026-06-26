@@ -1575,6 +1575,34 @@ main{width:100%}
   .location{max-width:220px}
 }
 
+
+
+/* ===== v5 手機修正版：行政區勾選卡片不再互相覆蓋，後台入口固定可見 ===== */
+.admin-entry-link{display:inline-flex;margin-left:8px;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.72);color:#0c4f7d;text-decoration:none;font-size:11px;font-weight:950;border:1px solid rgba(184,211,230,.95);vertical-align:middle}
+.admin-entry-link:hover{background:#fff;color:#063b63}
+body.monitoring-3d .district-select-panel{box-sizing:border-box;overflow:hidden}
+body.monitoring-3d .district-options{box-sizing:border-box;overflow-y:auto;overflow-x:hidden;align-items:stretch}
+body.monitoring-3d .district-option{box-sizing:border-box;width:100%;max-width:100%;justify-content:flex-start;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;line-height:1.25;position:relative;transform:none!important}
+body.monitoring-3d .district-option span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.monitoring-3d .district-check{margin-left:auto;order:2}
+@media(max-width:760px){
+  .admin-entry-link{display:inline-flex;margin:8px 0 0 0;width:fit-content}
+  body.monitoring-3d .district-select-panel{padding:12px;border-radius:14px;max-height:none}
+  body.monitoring-3d .district-options{grid-template-columns:1fr 1fr!important;gap:8px;max-height:360px;padding:12px 0}
+  body.monitoring-3d .district-option{min-height:46px;padding:9px 10px;font-size:13px;border-radius:12px;justify-content:space-between}
+  body.monitoring-3d .district-panel-head,body.monitoring-3d .district-panel-foot{gap:8px}
+  body.monitoring-3d .district-panel-head strong{font-size:14px}
+  body.monitoring-3d .district-panel-head span{font-size:11px}
+  .source-badge{display:block;text-align:left}
+}
+@media(max-width:390px){
+  body.monitoring-3d .district-options{grid-template-columns:1fr!important}
+}
+
+
+/* 後台入口修正：/admin 或 ?admin=1 時，未登入也要顯示 Token 登入框 */
+body.viewer-mode .admin-gate:not([hidden]){display:block!important}
+body.viewer-mode .import-card{display:none!important}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -1583,7 +1611,7 @@ main{width:100%}
 <header>
   <div class="header-inner">
     <div class="header-copy"><h1>新北市移動式聲音照相執行成效監測平台</h1><div class="subtitle">智慧執法 × 科學治理 × 即時監測</div><div class="header-source">資料來源：新北市政府環境保護局<div class="live-chip"><span></span>系統運作中</div></div></div>
-    <div class="source-badge" id="dataVersionBadge">資料版本：2026/06/10｜年度目標 490 場</div>
+    <div class="source-badge" id="dataVersionBadge">資料版本：2026/06/10｜年度目標 490 場 <a class="admin-entry-link" href="/admin" title="後端管理">後台管理</a></div>
   </div>
 </header>
 <main>
@@ -1770,6 +1798,7 @@ main{width:100%}
       <div class="import-toolbar">
         <button class="secondary" onclick="downloadExcelTemplate()">下載 Excel 樣板</button>
         <button class="secondary" onclick="downloadSyncedExcel()">匯出同步 Excel</button>
+        <button onclick="downloadTotalExcel()">一鍵產出 Excel 總表</button>
         <button class="danger" data-admin-only="true" onclick="restoreBuiltInData()">還原內建資料</button>
       </div>
     </div>
@@ -2533,6 +2562,22 @@ async function downloadSyncedExcel(){
 }
 
 
+
+async function downloadTotalExcel(){
+  if(!requireManagement('一鍵產出 Excel 總表'))return;
+  try{
+    const res=await fetch('/api/export/summary-excel',{headers:authHeaders({'Accept':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),cache:'no-store'});
+    if(!res.ok)throw new Error(await res.text().catch(()=>`HTTP ${res.status}`));
+    const blob=await res.blob();
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='聲音照相執行總表KPI.xlsx';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),700);
+    showImportMessage('已產出 Excel 總表（含總表KPI、行政區KPI、執行成效、車輛案件）。','ok');addHistory('一鍵產出 Excel 總表','成功');
+  }catch(e){showImportMessage(`Excel 總表產出失敗：${esc(e.message||e)}`,'error');addHistory(`Excel 總表產出失敗：${e.message||e}`,'失敗')}
+}
+
 async function syncDashboardToServer(label='平台資料同步'){
   const url=getApiUrl() || '/api/noise-dashboard-data';
   localStorage.setItem(API_KEY,url);
@@ -2673,6 +2718,30 @@ main{width:100%}
   .month-label{font-size:11px}
   .rank-name{white-space:normal;line-height:1.35}
   .location{max-width:220px}
+}
+
+
+
+/* ===== v5 手機修正版：行政區勾選卡片不再互相覆蓋，後台入口固定可見 ===== */
+.admin-entry-link{display:inline-flex;margin-left:8px;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,.72);color:#0c4f7d;text-decoration:none;font-size:11px;font-weight:950;border:1px solid rgba(184,211,230,.95);vertical-align:middle}
+.admin-entry-link:hover{background:#fff;color:#063b63}
+body.monitoring-3d .district-select-panel{box-sizing:border-box;overflow:hidden}
+body.monitoring-3d .district-options{box-sizing:border-box;overflow-y:auto;overflow-x:hidden;align-items:stretch}
+body.monitoring-3d .district-option{box-sizing:border-box;width:100%;max-width:100%;justify-content:flex-start;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;line-height:1.25;position:relative;transform:none!important}
+body.monitoring-3d .district-option span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.monitoring-3d .district-check{margin-left:auto;order:2}
+@media(max-width:760px){
+  .admin-entry-link{display:inline-flex;margin:8px 0 0 0;width:fit-content}
+  body.monitoring-3d .district-select-panel{padding:12px;border-radius:14px;max-height:none}
+  body.monitoring-3d .district-options{grid-template-columns:1fr 1fr!important;gap:8px;max-height:360px;padding:12px 0}
+  body.monitoring-3d .district-option{min-height:46px;padding:9px 10px;font-size:13px;border-radius:12px;justify-content:space-between}
+  body.monitoring-3d .district-panel-head,body.monitoring-3d .district-panel-foot{gap:8px}
+  body.monitoring-3d .district-panel-head strong{font-size:14px}
+  body.monitoring-3d .district-panel-head span{font-size:11px}
+  .source-badge{display:block;text-align:left}
+}
+@media(max-width:390px){
+  body.monitoring-3d .district-options{grid-template-columns:1fr!important}
 }
 
 </style>${bodyMarkup}</div></foreignObject></svg>`;
