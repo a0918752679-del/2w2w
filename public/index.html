@@ -2018,8 +2018,17 @@ function initializeKpiNavigation(){
   document.querySelectorAll('[data-progress-close]').forEach(el=>el.addEventListener('click',closeProgressModal));
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('progressModal').hidden)closeProgressModal()});
 }
-function render(){
-  const data=filtered(), sessions=data.length, fine=sum(data,'fineCases'), inspect=sum(data,'inspectCases'), cases=fine+inspect, vehicles=sum(data,'vehicles'), over=sum(data,'over');
+const data=filtered(), sessions=data.length, vehicles=sum(data,'vehicles'), over=sum(data,'over');
+
+const matchedVehicleRows = VEHICLES.filter(v => {
+  const month = v.date ? Number(String(v.date).slice(5, 7)) : null;
+  return (selectedMonths.size === 0 || selectedMonths.has(month)) &&
+         (selectedDistricts.size === 0 || selectedDistricts.has(v.district));
+});
+
+const fine = matchedVehicleRows.filter(v => String(v.caseType || v['案件類型'] || v.type || '').includes('告發')).length;
+const inspect = matchedVehicleRows.filter(v => String(v.caseType || v['案件類型'] || v.type || '').includes('通檢')).length;
+const cases = fine + inspect;
   SOURCE_TOTAL=completed.length;
   const overall=(SOURCE_TOTAL/TARGET*100);
   document.getElementById('progressValue').textContent=overall.toFixed(1)+'%';
