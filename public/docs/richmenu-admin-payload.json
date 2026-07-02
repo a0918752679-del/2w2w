@@ -1,0 +1,47 @@
+{
+  "size": {
+    "width": 2500,
+    "height": 1686
+  },
+  "selected": true,
+  "name": "NTPC Noise V88 Admin",
+  "chatBarText": "開啟功能選單",
+  "areas": [
+    {
+      "bounds": {
+        "x": 25,
+        "y": 760,
+        "width": 805,
+        "height": 685
+      },
+      "action": {
+        "type": "uri",
+        "uri": "{FIELD_REPORT_URL}/summary"
+      }
+    },
+    {
+      "bounds": {
+        "x": 835,
+        "y": 760,
+        "width": 790,
+        "height": 685
+      },
+      "action": {
+        "type": "message",
+        "text": "設備管理"
+      }
+    },
+    {
+      "bounds": {
+        "x": 1630,
+        "y": 760,
+        "width": 840,
+        "height": 685
+      },
+      "action": {
+        "type": "uri",
+        "uri": "{CASE_TRACKING_URL}"
+      }
+    }
+  ]
+}

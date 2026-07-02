@@ -1,0 +1,80 @@
+[
+  {
+    "id": "overview",
+    "name": "現場架設全景",
+    "description": "確認設備架設位置與車道路段全貌",
+    "sample": "/assets/field-photo-samples/sample_01.jpg"
+  },
+  {
+    "id": "device",
+    "name": "設備近照",
+    "description": "確認設備外觀、鏡頭方向與固定狀態",
+    "sample": "/assets/field-photo-samples/sample_02.jpg"
+  },
+  {
+    "id": "device_no",
+    "name": "機台編號／設備標示",
+    "description": "確認設備機號、序號或現場校正佐證",
+    "sample": "/assets/field-photo-samples/sample_03.jpg"
+  },
+  {
+    "id": "sign",
+    "name": "告示牌近照",
+    "description": "確認告示牌內容清楚可辨識",
+    "sample": "/assets/field-photo-samples/sample_04.jpg"
+  },
+  {
+    "id": "sign_context",
+    "name": "告示牌與路段環境",
+    "description": "確認告示牌位置與車流方向",
+    "sample": "/assets/field-photo-samples/sample_05.jpg"
+  },
+  {
+    "id": "road_forward",
+    "name": "稽查方向視角",
+    "description": "確認車道、視線、車牌辨識角度",
+    "sample": "/assets/field-photo-samples/sample_06.jpg"
+  },
+  {
+    "id": "road_backward",
+    "name": "反向／周邊視角",
+    "description": "確認周邊環境與遮蔽物",
+    "sample": "/assets/field-photo-samples/sample_07.jpg"
+  },
+  {
+    "id": "power",
+    "name": "電力／線路／固定",
+    "description": "確認電源、線路與固定安全",
+    "sample": "/assets/field-photo-samples/sample_08.jpg"
+  },
+  {
+    "id": "calibration",
+    "name": "校正／操作佐證",
+    "description": "確認校正值、設備操作或作業紀錄",
+    "sample": "/assets/field-photo-samples/sample_09.jpg"
+  },
+  {
+    "id": "environment",
+    "name": "環境條件佐證",
+    "description": "確認天候、風速、背景環境或特殊狀況",
+    "sample": "/assets/field-photo-samples/sample_10.jpg"
+  },
+  {
+    "id": "extra1",
+    "name": "補充照片1",
+    "description": "其他現場佐證",
+    "sample": "/assets/field-photo-samples/sample_11.jpg"
+  },
+  {
+    "id": "extra2",
+    "name": "補充照片2",
+    "description": "其他現場佐證",
+    "sample": "/assets/field-photo-samples/sample_12.jpg"
+  },
+  {
+    "id": "extra3",
+    "name": "補充照片3",
+    "description": "其他現場佐證",
+    "sample": "/assets/field-photo-samples/sample_13.jpg"
+  }
+]

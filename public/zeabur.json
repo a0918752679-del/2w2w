@@ -1,0 +1,10 @@
+{
+  "name": "newtaipei-noise-control-system-v73",
+  "build": {
+    "type": "dockerfile",
+    "dockerfile": "Dockerfile"
+  },
+  "run": {
+    "port": 8080
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "newtaipei-noise-control-system-v73-zeabur-direct-upload",
+  "version": "88.0.0",
+  "private": true,
+  "description": "New Taipei noise vehicle LINE Bot system - live equipment lifecycle status logic",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node -c server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {}
+}

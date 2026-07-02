@@ -1,0 +1,145 @@
+{
+  "version": "88.0.0",
+  "created_at": "2026-07-02 16:49:50",
+  "all_checks_passed": true,
+  "summary": "Corrected Rich Menu image mapping using manual source assignment; backend preserved.",
+  "mapped_sources": {
+    "field": "/mnt/data/F65FAE1F-12B4-4E26-A71C-7A4056C8302A.jpeg",
+    "admin": "/mnt/data/2359E889-407C-4653-A2C9-B1CA816BB699.jpeg",
+    "info": "/mnt/data/9CDE191F-F204-4092-AFDF-314A36C2CAB5.jpeg"
+  },
+  "checks": [
+    {
+      "check": "base package selected",
+      "passed": true,
+      "output": "/mnt/data/linebot_live_equipment_v73_3(2).zip"
+    },
+    {
+      "check": "server.js preserved",
+      "passed": true,
+      "output": "exists"
+    },
+    {
+      "check": "server no V86 Clean Package",
+      "passed": true,
+      "output": "ok"
+    },
+    {
+      "check": "node --check server.js",
+      "passed": true,
+      "output": ""
+    },
+    {
+      "check": "json richmenu-field-payload.json",
+      "passed": true,
+      "output": "areas=3"
+    },
+    {
+      "check": "json richmenu-admin-payload.json",
+      "passed": true,
+      "output": "areas=3"
+    },
+    {
+      "check": "json richmenu-info-payload.json",
+      "passed": true,
+      "output": "areas=2"
+    },
+    {
+      "check": "field payload 3 functions",
+      "passed": true,
+      "output": "3"
+    },
+    {
+      "check": "admin payload 3 functions",
+      "passed": true,
+      "output": "3"
+    },
+    {
+      "check": "info payload 2 functions",
+      "passed": true,
+      "output": "2"
+    },
+    {
+      "check": "admin payload no 資料安全",
+      "passed": true,
+      "output": "ok"
+    },
+    {
+      "check": "info payload no 操作說明",
+      "passed": true,
+      "output": "ok"
+    },
+    {
+      "check": "image field 2500x1686",
+      "passed": true,
+      "output": "2500x1686"
+    },
+    {
+      "check": "image field under 1MB",
+      "passed": true,
+      "output": "810731"
+    },
+    {
+      "check": "image admin 2500x1686",
+      "passed": true,
+      "output": "2500x1686"
+    },
+    {
+      "check": "image admin under 1MB",
+      "passed": true,
+      "output": "697870"
+    },
+    {
+      "check": "image info 2500x1686",
+      "passed": true,
+      "output": "2500x1686"
+    },
+    {
+      "check": "image info under 1MB",
+      "passed": true,
+      "output": "695773"
+    },
+    {
+      "check": "overview 2500x1686",
+      "passed": true,
+      "output": "2500x1686"
+    }
+  ],
+  "images": [
+    {
+      "page": "field",
+      "file": "public/assets/line-richmenu-field.jpg",
+      "source": "/mnt/data/F65FAE1F-12B4-4E26-A71C-7A4056C8302A.jpeg",
+      "width": 2500,
+      "height": 1686,
+      "size_bytes": 810731,
+      "under_1mb": true
+    },
+    {
+      "page": "admin",
+      "file": "public/assets/line-richmenu-admin.jpg",
+      "source": "/mnt/data/2359E889-407C-4653-A2C9-B1CA816BB699.jpeg",
+      "width": 2500,
+      "height": 1686,
+      "size_bytes": 697870,
+      "under_1mb": true
+    },
+    {
+      "page": "info",
+      "file": "public/assets/line-richmenu-info.jpg",
+      "source": "/mnt/data/9CDE191F-F204-4092-AFDF-314A36C2CAB5.jpeg",
+      "width": 2500,
+      "height": 1686,
+      "size_bytes": 695773,
+      "under_1mb": true
+    },
+    {
+      "page": "overview",
+      "file": "public/assets/line-richmenu-3tabs-overview.jpg",
+      "width": 2500,
+      "height": 1686,
+      "size_bytes": 592433,
+      "under_1mb": true
+    }
+  ]
+}
